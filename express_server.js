@@ -1,9 +1,10 @@
 const express = require("express");
 const app = express();
-const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({extended: true}));
+const PORT = 8080; // default port 8080
 
+app.use(bodyParser.urlencoded({extended: true}));
+app.set("view engine", "ejs");
 
 const generateRandomString = () => {
   return Math.random().toString(36).substr(2, 6);
@@ -15,39 +16,52 @@ const urlDatabase = {
 };
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.render("urls_index", {
+    'urls': urlDatabase
+  });
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
-  res.render("urls_index", templateVars);
+  res.render("urls_index", {
+    'urls': urlDatabase
+  });
 });
+
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase);
+})
 
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
 // Display a single URL and its shortened form.
-app.get("/urls/:id", (req, res) => {
-  let templateVars = { urls: urlDatabase, shortURL: req.params.id };
-  res.render("urls_show", templateVars);
-});
-
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL }
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars);
 });
 
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
-  res.redirect(longURL);
+  if (longURL === undefined) {
+    res.send(302);
+  } else {
+    res.redirect(longURL);
+  } 
+});
+
+
+app.post("/urls/:shortURL/delete", (req, res) => {
+  const shortURL = req.params.shortURL;
+  delete urlDatabase[shortURL];
+  res.redirect('/urls');
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
-  res.send(generateRandomString());
-  urlDatabase[shortURL] = req.body.longURL;
-  res.redirect("/urls/" + shortURL);
+  const longURL = req.body.longURL;
+  const shortURL = generateRandomString();
+  urlDatabase[shortURL] = longURL;
+  res.redirect('/urls');
 });
 
 
@@ -55,4 +69,3 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-app.set("view engine", "ejs");
