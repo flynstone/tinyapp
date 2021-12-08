@@ -1,5 +1,5 @@
 <header>
-  <nav class="navbar navbar-expand-md navbar-dark bg-success">
+  <nav class="navbar navbar-expand-md navbar-dark" style="background: linear-gradient(to bottom, rgb(10, 66, 187), #345);">
     <a class="navbar-brand" href="/urls">TinyApp</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
@@ -8,6 +8,24 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
+      </div>
+    </div>
+    
+    <div class="justify-content-end pr-3">
+      <div class="row pt-1">
+        <% if (username) { %>
+          <h4 class="mr-3" style="color: white;"><%= username %></h4>
+          <form action="/logout" method="POST">
+            <button type="submit" style="background-color: transparent;border-style: solid; border-color: coral;border-radius: 10px;color:coral">Logout</button>
+          </form>
+          <% } else { %> 
+          <form action="/login" method="POST">
+            <div class="container">
+              <input type="text" name="username" placeholder="Username" style="border-radius: 7px;">
+              <button type="submit" style="background-color: transparent; border-style: solid; border-color: yellowgreen; border-radius: 10px;color:yellowgreen">Login</button>
+            </div>
+          </form>
+        <% } %> 
       </div>
     </div>
   </nav>
