@@ -18,9 +18,16 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
-const users = {
+const users = {};
 
-};
+const emailExists = (email) => {
+  for (const user in users) {
+    if (users[user].email === email) {
+      return true;
+    }
+  }
+  return false;
+}
 
 
 // ------------------------------------------------------------ //
@@ -151,8 +158,24 @@ app.post("/logout", (req, res) => {
 // ------------------------------------------------------------ //
 
 app.post("/register", (req, res) => {
-  const user_id = generateRandomString(users);
-  users[user_id] = { id: user_id, email: req.body.email, password: req.body.password };
+
+  const userEmail = req.body.email;
+  const userPassword = req.body.password;
+
+  if (!userEmail || !userPassword) {
+    res.send(400, "Please include both a valid email and password");
+  };
+
+  if (emailExists(userEmail)) {
+    res.send(400, "An account already exists for this email address");
+  };
+  
+  const user_id = generateRandomString();
+  users[user_id] = {
+    id: user_id,
+    email: userEmail,
+    password: userPassword
+  };
   res.cookie('user_id', user_id);
   res.redirect('/urls');
 
