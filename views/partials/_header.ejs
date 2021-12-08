@@ -13,8 +13,8 @@
     
     <div class="justify-content-end pr-3">
       <div class="row pt-1">
-        <% if (username) { %>
-          <h4 class="mr-3" style="color: white;"><%= username %></h4>
+        <% if (user) { %>
+          <h4 class="mr-3" style="color: white;"><%= user.email %></h4>
           <form action="/logout" method="POST">
             <button type="submit" style="background-color: transparent;border-style: solid; border-color: coral;border-radius: 10px;color:coral">Logout</button>
           </form>
