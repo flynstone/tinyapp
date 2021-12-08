@@ -53,14 +53,14 @@ app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
 });
-/*
+
 app.get("/register", (req, res) => {
   const templateVars = {
     username: null
   };
   res.render("urls_register", templateVars);
 });
-*/
+
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
   delete urlDatabase[shortURL];
