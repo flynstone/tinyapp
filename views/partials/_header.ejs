@@ -1,3 +1,4 @@
+
 <header>
   <nav class="navbar navbar-expand-md navbar-dark" style="background: linear-gradient(to bottom, rgb(10, 66, 187), #345);">
     <a class="navbar-brand" href="/urls">TinyApp</a>
@@ -18,14 +19,10 @@
           <form action="/logout" method="POST">
             <button type="submit" style="background-color: transparent;border-style: solid; border-color: coral;border-radius: 10px;color:coral">Logout</button>
           </form>
-          <% } else { %> 
-          <form action="/login" method="POST">
-            <div class="container">
-              <input type="text" name="username" placeholder="Username" style="border-radius: 7px;">
-              <button type="submit" style="background-color: transparent; border-style: solid; border-color: yellowgreen; border-radius: 10px;color:yellowgreen">Login</button>
-            </div>
-          </form>
-        <% } %> 
+        <% } else { %>
+            <a href="/login" class="btn btn-outline-primary">Login</a>
+            <a href="/register" class="btn btn-outline-light">Register</a>
+        <% } %>
       </div>
     </div>
   </nav>
