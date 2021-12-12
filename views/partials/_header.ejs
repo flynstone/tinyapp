@@ -1,7 +1,6 @@
-
-<header>
+<header style="font-family: 'itc-benguiat',serif;font-size: 24px;">
   <nav class="navbar navbar-expand-md navbar-dark" style="background: linear-gradient(to bottom, rgb(10, 66, 187), #345);">
-    <a class="navbar-brand" href="/urls">TinyApp</a>
+    <a class="navbar-brand" href="/urls" style="font-size: 24px;">TinyApp</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -15,13 +14,19 @@
     <div class="justify-content-end pr-3">
       <div class="row pt-1">
         <% if (user) { %>
-          <h4 class="mr-3" style="color: white;"><%= user.email %></h4>
+          <h4 class="mr-3 pt-1" style="color: white;"><%= user.email %></h4>
           <form action="/logout" method="POST">
-            <button type="submit" style="background-color: transparent;border-style: solid; border-color: coral;border-radius: 10px;color:coral">Logout</button>
+            <button type="submit" style="background-color: #1c2331;border-style: solid; border-color: coral;color:coral;border-radius: 7px;">Logout</button>
           </form>
         <% } else { %>
-            <a href="/login" class="btn btn-outline-primary">Login</a>
-            <a href="/register" class="btn btn-outline-light">Register</a>
+          <div class="container">
+            <div class="row">
+                <div class="pr-3">
+                  <a href="/login" class="btn btn-success" style="border-radius: 7px;">Login</a>
+                </div>
+                <a href="/register" class="btn btn-outline-light" style="background-color: #4f5c77; border-radius: 7px;">Register</a>
+            </div>
+          </div>
         <% } %>
       </div>
     </div>
