@@ -254,10 +254,10 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 app.post("/login", (req, res) => {
   let userEmail = req.body.email;
   let userPassword = req.body.password;
-  let user_id = getUserByEmail(users, userEmail);
+  let user_id = getUserByEmail(userEmail, users);
 
-  if (checkPassword(users, userEmail, userPassword)) {
-    req.session["user_id"] = user_id;
+  if (checkPassword(userEmail, userPassword, users)) {
+    req.session.user_id = user_id;
     res.redirect("/urls");
   } else {
     const templateVars = {

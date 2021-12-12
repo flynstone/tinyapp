@@ -40,7 +40,7 @@ const getUserById = (id, users) => {
   return null;
 }
 
-const checkPassword = (users, email, password) => {
+const checkPassword = (email, password, users) => {
   for (let user in users) {
     if (users[user].email === email) {
       if (bcryptjs.compareSync(password, users[user].password)) {
