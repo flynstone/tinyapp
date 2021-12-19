@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
-const bcryptjs = require('bcryptjs');
+const bcryptjs = require("bcryptjs");
 
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -9,7 +9,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const cookieSession = require("cookie-session");
 app.use(cookieSession({
   name: "session",
-  keys: ["wuyjfx36v47dj"]
+  keys: ['wuyjfx36v47dj']
 }));
 
 // Url database
@@ -25,18 +25,7 @@ const urlDatabase = {
 };
 
 // Users database
-const users = {
-  "testUserId": {
-    id: "testUserId",
-    email: "user@test.com",
-    password: bcryptjs.hashSync("purple-monkey-dinosaur", 10) 
-  },
-  "userTestId": {
-    id: "userTestId",
-    email: "test@user.com",
-    password: bcryptjs.hashSync("dishwasher-funk", 10)
-  }
-}
+const users = {}
 
 // Import helpers
 const {
@@ -95,7 +84,7 @@ app.post("/urls/:shortURL", (req, res) => {
 app.get("/urls", (req, res) => {
   let user_id = users[req.session["user_id"]];
   if (user_id) {
-    let userUrls = urlsForUser(urlDatabase, user_id["id"]);
+    let userUrls = urlsForUser(urlDatabase, user_id);
     const templateVars = {
       user: user_id,
       urls: userUrls
@@ -117,7 +106,7 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   const user = users[req.session.user_id];
   if (!user) {
-    res.redirect('/login');
+    res.redirect("/login");
   }
   res.render("urls_new", { user });
 });
@@ -128,34 +117,19 @@ app.get("/urls/new", (req, res) => {
 // ------------------------------------------------------------ //
 
 app.get("/urls/:shortURL", (req, res) => {
+  let user = users[req.session.user_id];
   let longURL = urlDatabase[req.params.shortURL].longURL;
-  let currentUser = users[req.session["user_id"]];
-  let display;
+  let userUrls = urlsForUser(urlDatabase, user);
+  const templateVars = {
+    shortURL: req.params.shortURL,
+    longURL: longURL,
+    user: user
+  };
 
-  // Check if url belongs to current user
-  if (currentUser) {
-    if (urlsForUser(urlDatabase, currentUser.id)[req.params.shortURL]) {
-      display = true; 
-    } else {
-      display = false; 
-    }
-
-    if (longURL) {
-      const templateVars = {
-        user: currentUser,
-        shortURL: req.params.shortURL,
-        longURL: longURL,                         
-        display
-      };
-
-      res.render("urls_show", templateVars);
-    }
-    else {
-      res.send("URL does not exist.");
-    }
-  }
-  else {
-    res.status(403).redirect("/login");
+  if (Object.keys(userUrls).includes(shortURL)) {
+    res.render("urls_show", templateVars);
+  } else {
+    res.status(400).send("You do not have permission to edit this url");
   }
 });
 
@@ -222,7 +196,7 @@ app.post("/urls", (req, res) => {
 
 app.post("/urls/:shortURL", (req, res) => {
 let user_id = req.session.user_id;
-  //check if URL belongs to user's list then they can edit
+  //check if URL belongs to user"s list then they can edit
   if (urlsForUser(urlDatabase, user_id)[req.params.shortURL]) {
     let newURL = req.body.newURL;
     //updating new URL to database
@@ -235,7 +209,7 @@ let user_id = req.session.user_id;
 //     POST => request to delete a shortURL + redirect
 // ------------------------------------------------------------ //
 
-app.post('/urls/:shortURL/delete', (req, res) => {
+app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
   const userId = req.session.user_id;
   if (urlDatabase[shortURL] && urlDatabase[shortURL].user_id === userId) {
@@ -260,11 +234,7 @@ app.post("/login", (req, res) => {
     req.session.user_id = user_id;
     res.redirect("/urls");
   } else {
-    const templateVars = {
-      error: "Invalid credentials",
-      user: null
-    };
-    res.render("/login", templateVars);
+    res.status(403).send("Incorrect credentials");;
   }
 });
 
@@ -273,7 +243,7 @@ app.post("/login", (req, res) => {
 // ------------------------------------------------------------ //
 
 app.post("/logout", (req, res) => {
-  delete req.session['user_id'];
+  req.session = null;
   res.redirect("/login");
 });
 
@@ -312,7 +282,7 @@ app.post("/register", (req, res) => {
       password: bcryptjs.hashSync(newPassword, 10),
     };
     users[newId] = newUser;
-    req.session['user_id'] = newId;
+    req.session["user_id"] = newId;
     res.redirect("/urls");
   }
 });
