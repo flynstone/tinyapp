@@ -9,32 +9,25 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const cookieSession = require("cookie-session");
 app.use(cookieSession({
   name: "session",
-  keys: ['wuyjfx36v47dj']
+  keys: ["key1", "key2"],
+  maxAge: 24 * 60 * 60 * 1000
 }));
 
 // Url database
 const urlDatabase = {
-  "b2xVn2": {
-    longURL: "http://www.lighthouselabs.ca",
-    userId: "testUserId"
-  },
-  "9sm5xK": {
-    longURL: "http://www.google.com",
-    userId: "userTestId"
-  }
+  b6UTxQ: { longURL: "https://www.tsn.ca", userId: "userRandomID" },
+  i3BoGr: { longURL: "https://www.google.ca", userId: "user2RandomID" }
 };
 
 // Users database
-const users = {}
+const users = { };
 
 // Import helpers
 const {
-  getUserByEmail,
   urlsForUser,
   generateRandomString,
   emailExists,
   checkPassword,
-  getUserById
 } = require("./helpers");
 
 app.set("view engine", "ejs");
@@ -48,54 +41,31 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase);
+});
+
 // ------------------------------------------------------------ //
 //                      Default route
 // ------------------------------------------------------------ //
 
 app.get("/", (req, res) => {
-  let user_id = users[req.session["user_id"]];
-  if (user_id) {
+  const userId = req.session.user_id;
+  if (userId) {
     res.redirect("/urls");
   } else {
     res.redirect("/login");
   }
 });
 
-// ------------------------------------------------------------ //
-//              GET => request for Index Route// ------------------------------------------------------------ //
-//  POST => request to save the shortURL in the db + redirect
-// ------------------------------------------------------------ //
-/*
-app.post("/urls/:shortURL", (req, res) => {
-  const { shortUrl } = req.params;
-  const user_id = req.session.user_id;
-
-  if (!urlDatabase[shortUrl]) {
-    res.sendStatus(404);
-  }
-  if (user_id !== urlDatabase[shortUrl].user_id) {
-    res.sendStatus(403);    
-  }
-  urlDatabase[shortUrl].longUrl = req.body.longUrl;
-  res.redirect("/urls")
-});*/
-// ------------------------------------------------------------ //
-
 app.get("/urls", (req, res) => {
-  let user_id = users[req.session["user_id"]];
-  if (user_id) {
-    let userUrls = urlsForUser(urlDatabase, user_id);
-    const templateVars = {
-      user: user_id,
-      urls: userUrls
-    };
-    res.render("urls_index", templateVars);
-  } else {
-    const templateVars = {
-      user: false //needs to be false to to show error on page to login/register
-    };
-    res.render("urls_index", templateVars);
-  }
+  const userId = req.session.user_id;
+  const templateVars = {
+    urls: urlsForUser(userId, urlDatabase),
+    user: users[userId]
+  };
+    
+  res.render("urls_index", templateVars);
 });
 
 
@@ -104,11 +74,15 @@ app.get("/urls", (req, res) => {
 // ------------------------------------------------------------ //
 
 app.get("/urls/new", (req, res) => {
-  const user = users[req.session.user_id];
-  if (!user) {
+  const userId = req.session.user_id;
+  const templateVars = {
+    user: users[userId]
+  };
+  if (!userId) {
     res.redirect("/login");
-  }
-  res.render("urls_new", { user });
+  } else {
+    res.render("urls_new", templateVars);
+  } 
 });
 
 
@@ -117,15 +91,14 @@ app.get("/urls/new", (req, res) => {
 // ------------------------------------------------------------ //
 
 app.get("/urls/:shortURL", (req, res) => {
-  let user = users[req.session.user_id];
-  let longURL = urlDatabase[req.params.shortURL].longURL;
-  let userUrls = urlsForUser(urlDatabase, user);
+  const userId = req.session.user_id;
+  const { shortURL } = req.params;
+  const userUrls = urlsForUser(userId, urlDatabase);
   const templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: longURL,
-    user: user
-  };
-
+    shortURL: shortURL,
+    longURL: urlDatabase[shortURL].longURL,
+    user: users[userId]
+  }
   if (Object.keys(userUrls).includes(shortURL)) {
     res.render("urls_show", templateVars);
   } else {
@@ -138,10 +111,9 @@ app.get("/urls/:shortURL", (req, res) => {
 // ------------------------------------------------------------ //
 
 app.get("/register", (req, res) => {
-  const id = req.session.user_id;
-  const user = id ? users[id] : null;
+  const userId = req.session.user_id;
   const templateVars = {
-    user
+    user: users[userId],
   }
   res.render("urls_register", templateVars);
 });
@@ -151,10 +123,9 @@ app.get("/register", (req, res) => {
 // ------------------------------------------------------------ //
 
 app.get("/login", (req, res) => {
-  const id = req.session.user_id;
-  const user = id ? users[id] : null;
+  const userId = req.session.user_id;
   const templateVars = {
-    user
+    user: users[userId],
   }
   res.render("urls_login", templateVars);
 });
@@ -165,8 +136,12 @@ app.get("/login", (req, res) => {
 // ------------------------------------------------------------ //
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL;
-  res.redirect(longURL);
+  const { longURL } = urlDatabase[req.params.shortURL];
+  if (!longURL) {
+    res.status(404).send("Not Found");
+  } else {
+    res.redirect(longURL);
+  }
 });
 
 // ------------------------------------------------------------ //
@@ -174,19 +149,17 @@ app.get("/u/:shortURL", (req, res) => {
 // ------------------------------------------------------------ //
 
 app.post("/urls", (req, res) => {
-  let user_id = req.session.user_id;
+  let userId = req.session.user_id;
   let shortURL = generateRandomString();
 
-  if (getUserById(user_id, users)) {
+  if (userId) {
     urlDatabase[shortURL] = {
       longURL: req.body.longURL,
-      user_id: user_id
+      userId
     };
-    res.redirect("/urls");
-  } 
-
-  else {
-    return res.status(400).send("You must be logged in to see this content");
+    res.redirect(`/urls/${shortURL}`);
+  } else {
+    res.status(400).send("You must be logged in to see this content");
   }
 });
 
@@ -194,14 +167,17 @@ app.post("/urls", (req, res) => {
 //     POST => request to update a url
 // ------------------------------------------------------------ //
 
-app.post("/urls/:shortURL", (req, res) => {
-let user_id = req.session.user_id;
-  //check if URL belongs to user"s list then they can edit
-  if (urlsForUser(urlDatabase, user_id)[req.params.shortURL]) {
-    let newURL = req.body.newURL;
-    //updating new URL to database
-    urlDatabase[req.params.shortURL].longURL = newURL;
+app.post("/urls/:id", (req, res) => {
+  const { longURL } = req.body;
+  const shortURL = req.params.id;
+  const userId = req.session.user_id;
+  const userUrls = urlsForUser(userId, urlDatabase);
+
+  if (Object.keys(userUrls).includes(shortURL)) {
+    urlDatabase[shortURL].longURL = longURL;
     res.redirect("/urls");
+  } else {
+    res.status(400).send("Please login to edit urls");
   }
 });
 
@@ -210,14 +186,15 @@ let user_id = req.session.user_id;
 // ------------------------------------------------------------ //
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const shortURL = req.params.shortURL;
   const userId = req.session.user_id;
-  if (urlDatabase[shortURL] && urlDatabase[shortURL].user_id === userId) {
+  const { shortURL } = req.params;
+
+  const userUrls = urlsForUser(userId, urlDatabase);
+  if (Object.keys(userUrls).includes(shortURL)) {
     delete urlDatabase[shortURL];
     res.redirect("/urls");
-    return;
   } else {
-    res.status(401).send("Operation failed");
+    res.status(400).send("You do not own this url!");
   }
 });
 
@@ -226,15 +203,15 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 // ------------------------------------------------------------ //
 
 app.post("/login", (req, res) => {
-  let userEmail = req.body.email;
-  let userPassword = req.body.password;
-  let user_id = getUserByEmail(userEmail, users);
+  const { email, password } = req.body;
 
-  if (checkPassword(userEmail, userPassword, users)) {
-    req.session.user_id = user_id;
-    res.redirect("/urls");
+  const user = checkPassword(email, password, users);
+  if (user) {
+    users[req.session.user_id];
+    res.redirect('/urls');
+    return;
   } else {
-    res.status(403).send("Incorrect credentials");;
+    res.status(403).send("Invalid credentials");
   }
 });
 
@@ -277,7 +254,7 @@ app.post("/register", (req, res) => {
   else {
     // Create new user
     const newUser = {
-      id: newId,
+      userID: newId,
       email: newEmail,
       password: bcryptjs.hashSync(newPassword, 10),
     };

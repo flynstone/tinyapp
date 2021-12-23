@@ -7,24 +7,29 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
   <title>URL - TinyApp Example</title>
 </head>
-<%- include('partials/_header') %>
 <body style="background-color: #1c2331; font-family: 'itc-benguiat',serif;font-size: 24px;">
-  <main style="margin: 1em;">
+  <%- include('partials/_header') %>
+  <main style="margin: 1em;">    
     <div class="card text-center">
+      <% if (user) { %> 
       <div class="card-header" style="color: #f5f5f5; background-color: #3F729B">
-        <h5 class="card-title">TinyURL for: <a href="<%= longURL %>" style="color: #12bda6;"><%= longURL %></a></h5>
-        <p class="card-text">Short URL: <a href="/u/<%= shortURL %>" style="color: #12bda6;"><%= shortURL %></a></p>
+        <h5 class="card-title">TinyURL for: <%= longURL %></h5>
+        <p class="card-text">Short URL: <%= shortURL %></p>
       </div>
 
       <div class="card-body" style="background-color: #3E4551;">    
         <form method="POST" action="/urls/<%= shortURL %>">     
           <h2 style="color: #f5f5f5;">Edit</h2>
-          <label for="newURL" style="color: #f5f5f5;">New URL:</label>
-          <input type="text" name="newURL" placeholder="http://" style="margin: 5px; padding: 5px;">
+          <label for="longURL" style="color: #f5f5f5;">New URL:</label>
+          <input type="text" name="longURL" placeholder="http://" style="margin: 5px; padding: 5px;">
           <button type="submit" class="btn btn-primary">Submit</button>
         </form>
       </div>
     </div>
+    <% } %>
+    <% if (!user) { %> 
+      Please <a href="/login">login</a> to view urls
+    <% } %>
   </main>
 <!-- Bootstrap JS -->
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

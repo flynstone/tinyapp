@@ -5,12 +5,13 @@ const generateRandomString = () => {
 }
 
 const getUserByEmail = (email, users) => {
-  for (let user in users) {
-    if (users[user].email === email) {  
+  for (let userId in users) {
+    const user = users[userId]; 
+    if (user.email === email) {  
       return user;
     }
   }
-
+  return undefined;
 };
 
 const emailExists = (users, email) => {
@@ -22,36 +23,25 @@ const emailExists = (users, email) => {
   return false;
 }
 
-const urlsForUser = (urlDatabase, id) => {
+const urlsForUser = (id, urlDatabase) => {
   const userUrls = {};
-  for (let url in urlDatabase) {
-    if (urlDatabase[url].user_id === id) {
-      userUrls[url] = urlDatabase[url];
+  for (let shortURL in urlDatabase) {
+    if (urlDatabase[shortURL].userId === id) {
+      userUrls[shortURL] = urlDatabase[shortURL];
     }
   }
   return userUrls;
 }
 
-const getUserById = (id, users) => {
-  const user = users[id];
-  if (user) {
-    return user;
-  }
-  return null;
-}
-
 const checkPassword = (email, password, users) => {
-  for (let user in users) {
-    if (users[user].email === email) {
-      if (bcryptjs.compareSync(password, users[user].password)) {
-        return true;
-      }
-    }
-  }
+  const user = getUserByEmail(email, users);
+  if (user && bcryptjs.compareSync(password, user.password)) {
+    return user;
+  } 
   return false;
 }
 
 
 
 
-module.exports = { generateRandomString, getUserByEmail, urlsForUser, emailExists, checkPassword, getUserById }
+module.exports = { generateRandomString, urlsForUser, emailExists, checkPassword }

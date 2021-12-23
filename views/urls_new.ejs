@@ -7,10 +7,11 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
     <title>New URL - TinyApp Example</title>
   </head>
-  <%- include('partials/_header') %>
   <body style="font-family: 'itc-benguiat',serif;background-color: #1c2331;font-size: 24px;">
-
+    <%- include('partials/_header') %>
     <main style="margin: 1em;">
+
+      <% if (user) { %>
       <h3 style="color:#f5f5f5">Create TinyURL</h3>
       <form class="form-inline" action="/urls" method="POST">
         <div class="form-group mb-2">
@@ -19,6 +20,11 @@
           <button type="submit" class="btn btn-outline-primary">Submit</button>
         </div>
       </form>
+      <% } else{ %>
+      <div class="alert alert-danger" role="alert">
+        You must be logged in to create a new short URL
+      </div>
+      <% } %>
     </main>
     
       <!-- Bootstrap JS -->
