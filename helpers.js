@@ -14,7 +14,11 @@ const getUserByEmail = (email, users) => {
   return undefined;
 };
 
-const emailExists = (users, email) => {
+const emailExists = (email, password, users) => {
+  if (!email || !password) { 
+    return false;
+  }
+
   for (let user in users) {
     if (users[user].email === email) {
       return true;
@@ -35,9 +39,16 @@ const urlsForUser = (id, urlDatabase) => {
 
 const checkPassword = (email, password, users) => {
   const user = getUserByEmail(email, users);
-  if (user && bcryptjs.compareSync(password, user.password)) {
-    return user;
-  } 
+  if (!email || !password) {
+    return false;
+  }
+
+  for (let user in users) {
+    if (users[user].email === email && bcryptjs.compareSync(password, users[user].hashedPassword)) {
+      return users[user];
+    }
+  }
+
   return false;
 }
 

@@ -16,15 +16,15 @@
         <% if (user) { %>
           <h4 class="mr-3 pt-1" style="color: white;"><%= user.email %></h4>
           <form action="/logout" method="POST">
-            <button type="submit" class="css-button">Logout</button>
+            <button type="submit" class="action-button red">Logout</button>
           </form>
         <% } else { %>
           <div class="container">
             <div class="row">
-                <div class="pr-3">
-                  <a href="/login" class="btn btn-success" style="border-radius: 7px;">Login</a>
-                </div>
-                <a href="/register" class="btn btn-outline-light" style="background-color: #4f5c77; border-radius: 7px;">Register</a>
+
+                <a href="/login" class="action-button green">Login</a>
+
+                <a href="/register" class="action-button blue">Register</a>
             </div>
           </div>
         <% } %>

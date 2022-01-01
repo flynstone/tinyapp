@@ -206,13 +206,12 @@ app.post("/login", (req, res) => {
   const { email, password } = req.body;
 
   const user = checkPassword(email, password, users);
-  if (user) {
-    users[req.session.user_id];
-    res.redirect('/urls');
-    return;
-  } else {
+  if (!user) {
     res.status(403).send("Invalid credentials");
-  }
+  } else {
+    req.session.user_id = user.id;
+    res.redirect('/urls');
+  } 
 });
 
 // ------------------------------------------------------------ //
@@ -229,39 +228,24 @@ app.post("/logout", (req, res) => {
 // ------------------------------------------------------------ //
 
 app.post("/register", (req, res) => {
-  let newId = generateRandomString();
-  let newEmail = req.body.email;
-  let newPassword = req.body.password;
 
-  // Check if email or password 
-  if (!newEmail || !newPassword) {
-    const templateVars = {
-      user: null,
-      error: "Email or Password input error!"
-    };
-    res.render("register", templateVars);
+  const registeredUser = emailExists(req.body.email, req.body.password, users);
+
+  if (registeredUser) {
+    res.send(401);
   }
 
-  // Throw error if email is already taken
-  else if (emailExists(users, newEmail)) {
-    const templateVars = {
-      user: null,
-      error: "Email already exists as user!"
-    };
-    res.render("register", templateVars);
-  }
-  
-  else {
-    // Create new user
-    const newUser = {
-      userID: newId,
-      email: newEmail,
-      password: bcryptjs.hashSync(newPassword, 10),
-    };
-    users[newId] = newUser;
-    req.session["user_id"] = newId;
-    res.redirect("/urls");
-  }
+  const hashedPassword = bcryptjs.hashSync(req.body.password, 10);
+  let userId = generateRandomString();
+
+  users[userId] = {
+    id: userId,
+    email: req.body.email,
+    hashedPassword: hashedPassword
+  };
+
+  req.session.user_id = userId;
+  res.redirect("/urls");
 });
 
 
